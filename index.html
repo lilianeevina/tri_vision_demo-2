@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tri Vision — Transport de bauxite, de la mine au port</title>
+<meta name="description" content="Tri Vision assure le transport de bauxite par camions bennes, de la mine au port.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15120f; --ink-2:#3d3631; --muted:#6a6058; --line:#e7e1da;
+    --dark:#16120f; --dark-2:#221c18;
+    --accent:#b4482a; --accent-600:#9a3b21; --accent-50:#f8ece7;
+    --radius:14px; --container:1240px;
+    --font-head:Manrope,Inter,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:72px}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:#c98a62;line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px}
+  body.no3d{background:linear-gradient(170deg,#4a2a1c,#8a3a22 50%,#b4482a) fixed}
+  svg{display:block}
+  a{color:inherit}
+  .container{max-width:var(--container);margin:0 auto;padding:0 16px}
+  @media (min-width:900px){.container{padding:0 40px}}
+  h1,h2,h3{font-family:var(--font-head);line-height:1.12;letter-spacing:-.02em;font-weight:800}
+  h2{font-size:clamp(26px,3.4vw,34px);margin-bottom:12px}
+  h3{font-size:16.5px;font-weight:700;letter-spacing:-.01em}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .eyebrow .num{font-family:var(--font-head);font-weight:800;color:var(--ink);letter-spacing:0}
+  .lead{font-size:16.5px;color:var(--muted)}
+
+  /* ---------- 3D background ---------- */
+  #scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+  .shade{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(0deg,rgba(18,14,12,.94) 0%,rgba(18,14,12,.78) 42%,rgba(18,14,12,.1) 72%,rgba(18,14,12,.35) 100%)}
+  @media (min-width:900px){
+    .shade{background:linear-gradient(90deg,rgba(18,14,12,.88) 0%,rgba(18,14,12,.66) 34%,rgba(18,14,12,.1) 60%,rgba(18,14,12,0) 100%)}
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid transparent;cursor:pointer;font-family:inherit;transition:background-color .18s ease,border-color .18s ease}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent-600)}
+  .btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}
+  .btn-ghost:hover{border-color:#fff}
+  .btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e7a24a;outline-offset:2px}
+
+  /* ---------- header ---------- */
+  .site-header{position:fixed;top:0;left:0;right:0;z-index:50;color:#fff;border-bottom:1px solid transparent;transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+  .site-header.solid{background:#fff;color:var(--ink);border-bottom-color:var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px;gap:24px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .brand-mark{width:36px;height:36px;border-radius:9px;background:var(--accent);display:grid;place-items:center;flex:0 0 auto}
+  .brand-name{font-family:var(--font-head);font-weight:800;font-size:18px;letter-spacing:.04em;line-height:1}
+  .brand-sub{display:block;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;opacity:.7;margin-top:4px}
+  .nav-links{display:flex;align-items:center;gap:30px;list-style:none}
+  .nav-links a{text-decoration:none;font-size:15px;font-weight:500;opacity:.85;padding:6px 0;border-bottom:2px solid transparent}
+  .nav-links a:hover{opacity:1}
+  .nav-links a.active{opacity:1;border-bottom-color:var(--accent)}
+  .nav-cta{min-height:42px;padding:0 18px}
+  .menu-btn{display:none;width:44px;height:44px;border-radius:10px;border:1px solid rgba(127,127,127,.4);background:transparent;color:inherit;align-items:center;justify-content:center;cursor:pointer}
+  @media (max-width:899px){.nav-links,.nav .nav-cta{display:none}.menu-btn{display:inline-flex}}
+  .mobile-menu{position:fixed;inset:72px 0 auto 0;background:#fff;color:var(--ink);border-bottom:1px solid var(--line);padding:8px 20px 24px;display:none;z-index:49}
+  .mobile-menu.open{display:block}
+  .mobile-menu a.link{display:flex;align-items:center;min-height:52px;border-bottom:1px solid var(--line);text-decoration:none;font-weight:500;font-size:17px}
+  .mobile-menu .btn{width:100%;margin-top:18px}
+
+  /* ---------- sections over the 3D ---------- */
+  main{position:relative;z-index:2}
+  .stage{min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:46vh 0 20px}
+  @media (min-width:900px){.stage{align-items:center;padding:110px 0 60px}}
+  .stage>.container{width:100%}
+  .panel{background:#fff;border-radius:var(--radius);padding:26px 22px;max-width:500px;box-shadow:0 24px 60px rgba(10,8,6,.28)}
+  @media (min-width:900px){.panel{padding:34px}}
+  .panel.dark{background:var(--dark);color:#fff}
+  .panel.dark .lead{color:rgba(255,255,255,.7)}
+  .panel.dark .eyebrow{color:#f0a37f}
+  .panel.dark .eyebrow .num{color:#fff}
+  .panel.wide{max-width:560px}
+
+  /* hero */
+  .hero{color:#fff;align-items:flex-end;padding-top:120px}
+  @media (min-width:900px){.hero{align-items:center}}
+  .hero .eyebrow{color:#f0a37f}
+  .hero h1{font-size:clamp(34px,5.4vw,60px);max-width:620px;margin-bottom:18px}
+  .hero .lead{color:rgba(255,255,255,.84);max-width:520px;font-size:18px}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  @media (max-width:520px){.hero-actions .btn{flex:1 1 100%}}
+  .hero-trust{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:36px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18);font-size:14px;color:rgba(255,255,255,.78);max-width:580px}
+  .hero-trust span{display:inline-flex;align-items:center;gap:8px}
+  .scroll-cue{display:none;align-items:center;gap:10px;margin-top:28px;font-size:13px;color:rgba(255,255,255,.65)}
+  @media (min-width:900px){.scroll-cue{display:inline-flex}}
+
+  .icon{width:44px;height:44px;border-radius:10px;background:var(--accent-50);color:var(--accent);display:grid;place-items:center;flex:0 0 auto}
+  .rows{list-style:none;display:grid;gap:0;margin-top:22px}
+  .row{display:flex;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+  .row h3{margin-bottom:3px}
+  .row p{font-size:14.5px;color:var(--muted)}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;margin-top:24px}
+  .stat{background:var(--dark-2);padding:20px 18px}
+  .stat b{display:block;font-family:var(--font-head);font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .stat span{font-size:13.5px;color:rgba(255,255,255,.65)}
+  .note{font-size:12.5px;color:rgba(255,255,255,.45);margin-top:12px}
+
+  .steps{list-style:none;counter-reset:s;display:grid;margin-top:22px}
+  .steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:15px 0;border-top:1px solid var(--line)}
+  .steps li::before{counter-increment:s;content:"0" counter(s);font-family:var(--font-head);font-weight:800;color:var(--accent);font-size:15px;padding-top:1px}
+  .steps h3{margin-bottom:3px}
+  .steps p{font-size:14.5px;color:var(--muted)}
+
+  .port-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+
+  /* contact */
+  .contact-items{display:grid;margin:20px 0 24px}
+  .contact-item{display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .contact-item .icon{width:38px;height:38px}
+  .contact-item small{display:block;font-size:12.5px;color:var(--muted)}
+  .contact-item strong{font-weight:600;font-size:15px;word-break:break-word}
+  form{display:grid;gap:14px}
+  .row-2{display:grid;gap:14px}
+  @media (min-width:560px){.row-2{grid-template-columns:1fr 1fr}}
+  label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
+  input,textarea{width:100%;min-height:46px;border:1px solid #d9d1c8;border-radius:10px;padding:11px 13px;font:inherit;font-size:16px;color:var(--ink);background:#fff}
+  textarea{min-height:96px;resize:vertical}
+  input:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(180,72,42,.15)}
+  .form-note{font-size:13.5px;color:var(--muted)}
+  .form-note.ok{color:#2f6b3a;background:#eef6ef;border:1px solid #cfe4d2;border-radius:10px;padding:11px 13px}
+
+  footer{position:relative;z-index:2;background:var(--dark);color:rgba(255,255,255,.7);padding:52px 0 26px;font-size:14.5px}
+  .foot{display:grid;gap:30px}
+  @media (min-width:760px){.foot{grid-template-columns:1.4fr 1fr 1fr}}
+  footer .brand{color:#fff;margin-bottom:14px}
+  footer h4{color:#fff;font-size:14px;font-weight:600;margin-bottom:12px}
+  footer ul{list-style:none;display:grid;gap:8px}
+  footer a{text-decoration:none}
+  footer a:hover{color:#fff}
+  .foot-bottom{margin-top:36px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-size:13px;color:rgba(255,255,255,.45)}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div class="shade" id="shade" aria-hidden="true"></div>
+
+<header class="site-header" id="header">
+  <div class="container nav">
+    <a class="brand" href="#accueil" aria-label="Tri Vision, accueil">
+      <span class="brand-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3L22 20H2z"/><path d="M12 10.5l4.3 7.5H7.7z" fill="#fff" stroke="none"/></svg></span>
+      <span><span class="brand-name">TRI VISION</span><span class="brand-sub">Transport &amp; logistique</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#flotte">Flotte</a></li>
+      <li><a href="#methode">Méthode</a></li>
+      <li><a href="#securite">Sécurité</a></li>
+      <li><a href="#port">Port</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a class="btn btn-primary nav-cta" href="#contact">Demander un devis</a>
+    <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Menu principal">
+  <a class="link" href="#services">Services</a>
+  <a class="link" href="#flotte">Flotte</a>
+  <a class="link" href="#methode">Méthode</a>
+  <a class="link" href="#securite">Sécurité</a>
+  <a class="link" href="#port">Port</a>
+  <a class="link" href="#contact">Contact</a>
+  <a class="btn btn-primary" href="#contact">Demander un devis</a>
+</nav>
+
+<main>
+  <section class="stage hero" id="accueil">
+    <div class="container" style="width:100%">
+      <span class="eyebrow">Transport de bauxite</span>
+      <h1>Votre bauxite, de la mine au port, en toute fiabilité.</h1>
+      <p class="lead">Tri Vision assure le transport de bauxite par camions bennes : chargement coordonné, rotations suivies en temps réel et livraison au port, 24 h/24.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#contact">Demander un devis</a>
+        <a class="btn btn-ghost" href="#services">Suivre le trajet</a>
+      </div>
+      <div class="hero-trust">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0a37f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Flotte suivie par GPS</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0a37f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Chauffeurs formés</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0a37f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>Maintenance en atelier</span>
+      </div>
+      <div class="scroll-cue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Faites défiler pour suivre un camion de la mine au port</div>
+    </div>
+  </section>
+
+  <section class="stage" id="services">
+    <div class="container"><div class="panel">
+      <span class="eyebrow"><span class="num">01</span>À la mine · Nos services</span>
+      <h2>Une chaîne complète, de l'extraction au quai</h2>
+      <p class="lead">Nous prenons en charge chaque étape pour que vos volumes arrivent au port au rythme prévu.</p>
+      <ul class="rows">
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M2.5 20l6.5-11 4.5 7 3-4.5 5 8.5z"/></svg></div><div><h3>Chargement à la mine</h3><p>Coordination avec l'exploitant et pesée de chaque benne au départ.</p></div></li>
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M2.5 6.5h11v10h-11zM13.5 9.5h4.5l3.5 3.5v3.5h-8z"/><circle cx="6.5" cy="17.5" r="2" fill="#fff"/><circle cx="17" cy="17.5" r="2" fill="#fff"/></svg></div><div><h3>Transport sur piste</h3><p>Camions bennes adaptés à la latérite, en saison sèche comme en saison des pluies.</p></div></li>
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v14M5 13a7 7 0 0014 0M8.5 10.5h7"/></svg></div><div><h3>Livraison au port</h3><p>Déchargement sur les stocks du quai et rapport de tonnage quotidien.</p></div></li>
+      </ul>
+    </div></div>
+  </section>
+
+  <section class="stage" id="flotte">
+    <div class="container"><div class="panel dark">
+      <span class="eyebrow"><span class="num">02</span>Sur la piste · Notre flotte</span>
+      <h2>Une flotte dimensionnée pour vos volumes</h2>
+      <p class="lead">Nos camions bennes sont entretenus dans notre atelier et inspectés avant chaque départ.</p>
+      <div class="stats">
+        <div class="stat"><b>80+</b><span>camions bennes</span></div>
+        <div class="stat"><b>35 t</b><span>par rotation</span></div>
+        <div class="stat"><b>24/7</b><span>exploitation continue</span></div>
+        <div class="stat"><b>98 %</b><span>disponibilité visée</span></div>
+      </div>
+      <p class="note">Chiffres d'exemple, à remplacer par ceux de Tri Vision.</p>
+    </div></div>
+  </section>
+
+  <section class="stage" id="methode">
+    <div class="container"><div class="panel">
+      <span class="eyebrow"><span class="num">03</span>En route · Notre méthode</span>
+      <h2>Comment nous travaillons</h2>
+      <ol class="steps">
+        <li><div><h3>Planification</h3><p>Volumes, trajet et nombre de rotations définis avec vous.</p></div></li>
+        <li><div><h3>Chargement et pesée</h3><p>Chaque camion est chargé, pesé et enregistré avant de partir.</p></div></li>
+        <li><div><h3>Transport suivi</h3><p>Suivi GPS sur toute la piste, de jour comme de nuit.</p></div></li>
+        <li><div><h3>Livraison et rapport</h3><p>Déchargement au port et tonnage transmis chaque jour.</p></div></li>
+      </ol>
+    </div></div>
+  </section>
+
+  <section class="stage" id="securite">
+    <div class="container"><div class="panel">
+      <span class="eyebrow"><span class="num">04</span>Sur la piste · Sécurité</span>
+      <h2>La sécurité avant le tonnage</h2>
+      <p class="lead">La sécurité de nos chauffeurs, de vos équipes et des riverains passe avant tout.</p>
+      <ul class="rows">
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4" stroke-linecap="round"/></svg></div><div><h3>Chauffeurs formés</h3><p>Conduite d'engins lourds et conduite défensive.</p></div></li>
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0113 0c0 5.3-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.2"/></svg></div><div><h3>Suivi GPS et vitesses</h3><p>Chaque camion est localisé en permanence, avec alertes de vitesse.</p></div></li>
+        <li class="row"><div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.2 5.2L3.5 17.5l3 3 6-6a4 4 0 005.2-5.2l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><div><h3>Maintenance préventive</h3><p>Entretien en atelier et inspection avant chaque départ.</p></div></li>
+      </ul>
+    </div></div>
+  </section>
+
+  <section class="stage" id="port">
+    <div class="container"><div class="panel">
+      <span class="eyebrow"><span class="num">05</span>Arrivée · Au port</span>
+      <h2>Livraison directe au quai</h2>
+      <p class="lead">Les camions déchargent sur les stocks du port, prêts pour le chargement des minéraliers. Vos volumes sont suivis rotation par rotation.</p>
+      <div class="port-cta"><a class="btn btn-primary" href="#contact">Demander un devis</a></div>
+    </div></div>
+  </section>
+
+  <section class="stage" id="contact">
+    <div class="container"><div class="panel wide">
+      <span class="eyebrow">Contact</span>
+      <h2>Parlons de votre projet</h2>
+      <p class="lead">Indiquez vos volumes, le trajet et la durée. Notre équipe vous répond rapidement.</p>
+      <div class="contact-items">
+        <div class="contact-item"><div class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 3.5h4l2 5-2.5 1.5a11 11 0 005.5 5.5l1.5-2.5 5 2v4a2 2 0 01-2 2A17 17 0 013 5.5a2 2 0 012-2z"/></svg></div><div><small>Téléphone</small><strong>+000 00 00 00 00</strong></div></div>
+        <div class="contact-item"><div class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5L12 13l8.5-6.5"/></svg></div><div><small>E-mail</small><strong>contact@votredomaine.com</strong></div></div>
+      </div>
+      <form id="quoteForm" novalidate>
+        <div class="row-2">
+          <div><label for="f-name">Nom complet</label><input id="f-name" name="name" autocomplete="name"></div>
+          <div><label for="f-company">Société</label><input id="f-company" name="company" autocomplete="organization"></div>
+        </div>
+        <div class="row-2">
+          <div><label for="f-phone">Téléphone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+          <div><label for="f-volume">Volume mensuel estimé</label><input id="f-volume" name="volume" placeholder="ex. 20 000 t"></div>
+        </div>
+        <div><label for="f-msg">Votre besoin</label><textarea id="f-msg" name="message"></textarea></div>
+        <button class="btn btn-primary" type="submit">Envoyer la demande</button>
+        <p class="form-note" id="formNote">Votre demande est transmise à l'équipe commerciale de Tri Vision.</p>
+      </form>
+    </div></div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot">
+      <div>
+        <a class="brand" href="#accueil"><span class="brand-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3L22 20H2z"/><path d="M12 10.5l4.3 7.5H7.7z" fill="#fff" stroke="none"/></svg></span><span><span class="brand-name">TRI VISION</span><span class="brand-sub">Transport &amp; logistique</span></span></a>
+        <p style="max-width:340px">Transport de bauxite par camions bennes, de la mine au port.</p>
+      </div>
+      <div><h4>Navigation</h4><ul><li><a href="#services">Services</a></li><li><a href="#flotte">Flotte</a></li><li><a href="#methode">Méthode</a></li><li><a href="#securite">Sécurité</a></li></ul></div>
+      <div><h4>Contact</h4><ul><li>+000 00 00 00 00</li><li>contact@votredomaine.com</li><li>Adresse du siège</li></ul></div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 Tri Vision. Tous droits réservés.</span><span>Version de démonstration : coordonnées et chiffres d'exemple</span></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const header=document.getElementById('header'),shade=document.getElementById('shade');
+  const menuBtn=document.getElementById('menuBtn'),menu=document.getElementById('mobileMenu');
+  const links=[...document.querySelectorAll('.nav-links a')];
+  const ids=links.map(a=>a.getAttribute('href').slice(1));
+  function onScroll(){
+    header.classList.toggle('solid',scrollY>40||menu.classList.contains('open'));
+    let active=null;ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<innerHeight*0.5)active=id;});
+    links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+active));
+  }
+  addEventListener('scroll',onScroll,{passive:true});onScroll();
+  function setMenu(open){menu.classList.toggle('open',open);menuBtn.setAttribute('aria-expanded',open);menuBtn.setAttribute('aria-label',open?'Fermer le menu':'Ouvrir le menu');onScroll();}
+  menuBtn.addEventListener('click',()=>setMenu(!menu.classList.contains('open')));
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&menu.classList.contains('open')){setMenu(false);menuBtn.focus();}});
+  const form=document.getElementById('quoteForm'),note=document.getElementById('formNote');
+  form.addEventListener('submit',e=>{e.preventDefault();note.className='form-note ok';note.textContent="Version de démonstration : le formulaire sera relié à l'adresse e-mail de Tri Vision lors de la mise en ligne.";});
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  function progress(){
+    const max=document.documentElement.scrollHeight-innerHeight-document.querySelector('footer').offsetHeight;
+    return max>0?Math.min(1,Math.max(0,scrollY/max)):0;
+  }
+  if(!window.THREE){document.body.classList.add('no3d');return;}
+  let renderer;
+  try{
+    renderer=new THREE.WebGLRenderer({canvas:document.getElementById('scene'),antialias:true,powerPreference:'high-performance'});
+  }catch(e){document.body.classList.add('no3d');return;}
+
+  const mobile=matchMedia('(pointer:coarse)').matches;
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile?1.75:2));
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.05;
+
+  const C=h=>new THREE.Color(h).convertSRGBToLinear();
+  const HORIZON=0xe6c4a2, ZENITH=0x7fa6c8;
+  const scene=new THREE.Scene();
+  scene.background=C(HORIZON);
+  scene.fog=new THREE.FogExp2(C(HORIZON),0.0105);
+  const camera=new THREE.PerspectiveCamera(48,1,0.1,500);
+
+  scene.add(new THREE.HemisphereLight(C(0xcfe0f5),C(0x7a3a22),0.75));
+  const sun=new THREE.DirectionalLight(C(0xffe2bd),2.6);
+  sun.castShadow=true;
+  sun.shadow.mapSize.set(mobile?1536:2048,mobile?1536:2048);
+  Object.assign(sun.shadow.camera,{left:-32,right:32,top:32,bottom:-32,near:1,far:170});
+  sun.shadow.bias=-0.0005;sun.shadow.normalBias=0.02;
+  scene.add(sun,sun.target);
+
+  // ---------- noise ----------
+  const smooth=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+  function hash(x,y){const h=Math.sin(x*127.1+y*311.7)*43758.5453;return h-Math.floor(h);}
+  function vnoise(x,y){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+    const a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;}
+  function fbm(x,y,o){o=o||5;let s=0,a=0.5,f=1;for(let i=0;i<o;i++){s+=a*vnoise(x*f,y*f);f*=2.03;a*=0.5;}return s;}
+  const rnd=Math.random;
+  const UP=new THREE.Vector3(0,1,0);
+
+  // ---------- procedural textures (no downloads) ----------
+  function grainTexture(size,base,spread,pebbles){
+    const c=document.createElement('canvas');c.width=c.height=size;const x=c.getContext('2d');
+    const img=x.createImageData(size,size),d=img.data;
+    for(let i=0;i<size*size;i++){
+      const px=i%size,py=(i/size)|0;
+      const n=0.55*rnd()+0.45*fbm(px*0.06,py*0.06,3);
+      const v=base+(n-0.5)*spread;
+      d[i*4]=v;d[i*4+1]=v*0.97;d[i*4+2]=v*0.94;d[i*4+3]=255;
+    }
+    x.putImageData(img,0,0);
+    for(let i=0;i<pebbles;i++){
+      const r=0.6+rnd()*1.8;x.fillStyle=rnd()<0.5?'rgba(60,30,20,.35)':'rgba(255,240,220,.25)';
+      x.beginPath();x.arc(rnd()*size,rnd()*size,r,0,6.283);x.fill();
+    }
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;
+    t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    return t;
+  }
+  const grain=grainTexture(256,225,70,500);
+  grain.repeat.set(55,55);
+  const grainSmall=grainTexture(128,225,60,120);
+
+  function roadTexture(){
+    const W=256,H=512,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+    const img=x.createImageData(W,H),d=img.data;
+    const tracks=[0.18,0.36,0.64,0.82];
+    for(let py=0;py<H;py++)for(let px=0;px<W;px++){
+      const u=px/W,i=(py*W+px)*4;
+      let v=0.92+(rnd()-0.5)*0.16+(fbm(px*0.05,py*0.02,3)-0.5)*0.18;
+      let tr=0;tracks.forEach(t=>{tr=Math.max(tr,1-smooth(0.012,0.05,Math.abs(u-t)));});
+      v-=tr*(0.16+0.08*vnoise(px*0.4,py*0.03));
+      // fine longitudinal streaks in the tracks
+      v-=tr*0.05*Math.sin(px*2.3+vnoise(px,py*0.05)*3);
+      const edge=Math.min(u,1-u);
+      const a=smooth(0.0,0.16+0.05*vnoise(py*0.05,1),edge);
+      d[i]=196*v;d[i+1]=128*v;d[i+2]=86*v;d[i+3]=255*a;
+    }
+    x.putImageData(img,0,0);
+    const t=new THREE.CanvasTexture(c);t.wrapS=THREE.ClampToEdgeWrapping;t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;
+    t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    return t;
+  }
+
+  // ---------- sky dome ----------
+  {
+    const g=new THREE.SphereGeometry(420,32,16),p=g.attributes.position,col=new Float32Array(p.count*3),h=C(HORIZON),z=C(ZENITH),t=new THREE.Color();
+    for(let i=0;i<p.count;i++){const k=Math.max(0,p.getY(i)/420);t.copy(h).lerp(z,Math.pow(k,0.55));col[i*3]=t.r;col[i*3+1]=t.g;col[i*3+2]=t.b;}
+    g.setAttribute('color',new THREE.BufferAttribute(col,3));
+    var sky=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false,depthWrite:false}));
+    sky.renderOrder=-1;scene.add(sky);
+  }
+
+  // ---------- road path ----------
+  const pts=[[-62,-38],[-45,-30],[-30,-36],[-12,-20],[-8,0],[-20,14],[-6,28],[14,26],[28,10],[44,16],[52,34],[60,46]]
+    .map(p=>new THREE.Vector3(p[0],0,p[1]));
+  const curve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',0.5);
+  const LEN=curve.getLength();
+  const S2=curve.getSpacedPoints(400).map(v=>[v.x,v.z]);
+  function roadDist(x,z){let m=1e9;for(let i=0;i<S2.length;i++){const dx=x-S2[i][0],dz=z-S2[i][1],d=dx*dx+dz*dz;if(d<m)m=d;}return Math.sqrt(m);}
+
+  const PIT={x:-80,z:-54,r:21};
+  function terrain(x,z,d){
+    let n=(fbm(x*0.016,z*0.016)-0.38)*15+(fbm(x*0.08+20,z*0.08-7,3)-0.5)*1.4;
+    let h=n*smooth(6.5,19,d)+(fbm(x*0.3,z*0.3,2)-0.5)*0.25*smooth(5.5,8,d);
+    const pr=Math.hypot(x-PIT.x,z-PIT.z);
+    if(pr<PIT.r){const s=(PIT.r-pr)/3.3;h=Math.min(h,-(Math.floor(s)+smooth(0.72,1,s%1))*1.5);}
+    const sea=smooth(106,116,x+z);
+    return h*(1-sea)-3.5*sea;
+  }
+  const grassiness=(x,z)=>smooth(0.42,0.68,fbm(x*0.028+50,z*0.028-30,4));
+
+  // ---------- ground ----------
+  const SEG=mobile?130:150;
+  const gGeo=new THREE.PlaneGeometry(280,280,SEG,SEG);
+  gGeo.rotateX(-Math.PI/2);
+  const gp=gGeo.attributes.position,cols=new Float32Array(gp.count*3);
+  const cRedA=C(0x8a3420),cRedB=C(0xa8502e),cGrass=C(0x8b7f48),cGrass2=C(0x6d6a38),cDust=C(0xb7764c),cPit=C(0x74301d),cSand=C(0xc2a07c),tc=new THREE.Color();
+  for(let i=0;i<gp.count;i++){
+    const x=gp.getX(i),z=gp.getZ(i),d=roadDist(x,z),h=terrain(x,z,d);
+    gp.setY(i,h);
+    tc.copy(cRedA).lerp(cRedB,fbm(x*0.05,z*0.05,3));
+    const gr=grassiness(x,z)*smooth(7,15,d);
+    tc.lerp(fbm(x*0.12,z*0.12,2)>0.5?cGrass:cGrass2,gr*0.8);
+    if(d<11)tc.lerp(cDust,(1-d/11)*0.7);
+    const pr=Math.hypot(x-PIT.x,z-PIT.z);
+    if(pr<PIT.r+2)tc.lerp(cPit,smooth(PIT.r+2,PIT.r-6,pr)*0.8);
+    if(x+z>104)tc.lerp(cSand,smooth(104,110,x+z));
+    cols[i*3]=tc.r;cols[i*3+1]=tc.g;cols[i*3+2]=tc.b;
+  }
+  gGeo.setAttribute('color',new THREE.BufferAttribute(cols,3));
+  gGeo.computeVertexNormals();
+  const ground=new THREE.Mesh(gGeo,new THREE.MeshStandardMaterial({vertexColors:true,map:grain,bumpMap:grain,bumpScale:0.035,roughness:1}));
+  ground.receiveShadow=true;scene.add(ground);
+
+  // road ribbon with tyre tracks
+  {
+    const N=500,W=5.4,pos=[],uv=[],idx=[];let dist=0,prev=null;
+    for(let i=0;i<=N;i++){
+      const u=i/N,p=curve.getPointAt(u),t=curve.getTangentAt(u);
+      if(prev)dist+=p.distanceTo(prev);prev=p;
+      const r=new THREE.Vector3(-t.z,0,t.x).normalize();
+      pos.push(p.x+r.x*W,0.05,p.z+r.z*W,p.x-r.x*W,0.05,p.z-r.z*W);
+      uv.push(1,dist/10,0,dist/10);
+      if(i<N){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
+    }
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    g.setIndex(idx);g.computeVertexNormals();
+    const tex=roadTexture();
+    const road=new THREE.Mesh(g,new THREE.MeshStandardMaterial({map:tex,roughness:1,transparent:true,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}));
+    road.receiveShadow=true;road.renderOrder=1;scene.add(road);
+  }
+
+  // sea
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(320,320),new THREE.MeshStandardMaterial({color:C(0x3f6f74),roughness:.18,metalness:.25}));
+  water.rotation.x=-Math.PI/2;
+  const waterHolder=new THREE.Group();waterHolder.add(water);
+  waterHolder.rotation.y=Math.PI/4;waterHolder.position.set(168,-0.8,168);
+  scene.add(waterHolder);
+
+  // ---------- helpers ----------
+  const M=(hex,o)=>new THREE.MeshStandardMaterial(Object.assign({color:C(hex),roughness:.8},o||{}));
+  function box(parent,w,h,d,mat,x,y,z,shadow){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=shadow!==false;m.receiveShadow=true;parent.add(m);return m;}
+  function cyl(parent,rt,rb,h,seg,mat,x,y,z,axis){const g=new THREE.CylinderGeometry(rt,rb,h,seg);if(axis==='x')g.rotateZ(Math.PI/2);if(axis==='z')g.rotateX(Math.PI/2);const m=new THREE.Mesh(g,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+  // lumpy blob: non-indexed icosahedron, consistent jitter, soft normals
+  function blob(detail,amt,seed){
+    const g=new THREE.IcosahedronGeometry(1,detail),p=g.attributes.position,n=g.attributes.normal,v=new THREE.Vector3();
+    for(let i=0;i<p.count;i++){
+      v.fromBufferAttribute(p,i).normalize();
+      const k=1+(hash(v.x*13.1+seed,v.y*17.3+v.z*7.7)-0.5)*amt;
+      n.setXYZ(i,v.x,v.y,v.z);p.setXYZ(i,v.x*k,v.y*k,v.z*k);
+    }
+    return g;
+  }
+  function merge(list){
+    const arr=list.map(g=>g.index?g.toNonIndexed():g);let n=0;arr.forEach(g=>n+=g.attributes.position.count);
+    const pos=new Float32Array(n*3),nor=new Float32Array(n*3);let o=0;
+    arr.forEach(g=>{pos.set(g.attributes.position.array,o*3);nor.set(g.attributes.normal.array,o*3);o+=g.attributes.position.count;});
+    const m=new THREE.BufferGeometry();m.setAttribute('position',new THREE.BufferAttribute(pos,3));m.setAttribute('normal',new THREE.BufferAttribute(nor,3));return m;
+  }
+  const oreMat=new THREE.MeshStandardMaterial({color:C(0x8a3a22),roughness:1,map:grainSmall,bumpMap:grainSmall,bumpScale:0.05});
+
+  // stockpiles
+  function pile(x,z,r){
+    const g=new THREE.ConeGeometry(r,r*0.75,36,6),p=g.attributes.position;
+    for(let i=0;i<p.count;i++){const px=p.getX(i),py=p.getY(i),pz=p.getZ(i),k=(hash(Math.round(px*10),Math.round(pz*10)+py)-0.5)*0.25;p.setXYZ(i,px*(1+k*0.3),py+k*0.4,pz*(1+k*0.3));}
+    g.computeVertexNormals();
+    const c=new THREE.Mesh(g,oreMat);c.position.set(x,terrain(x,z,roadDist(x,z))+r*0.37-0.15,z);c.castShadow=c.receiveShadow=true;scene.add(c);
+  }
+  pile(-66,-29,3.8);pile(-57,-47,3.3);pile(-72,-38,3.1);
+  pile(66,38,3.4);pile(71,31,3.1);
+
+  // ---------- port ----------
+  const port=new THREE.Group();port.position.set(63,0,51);port.rotation.y=Math.PI/4;scene.add(port);
+  const concrete=new THREE.MeshStandardMaterial({color:C(0x9c968d),roughness:.95,map:grainSmall});
+  box(port,30,1.4,8,concrete,0,-0.6,0);
+  const craneMat=M(0xd9861a,{roughness:.5,metalness:.2});
+  [-7,6].forEach(cx=>{
+    box(port,0.7,9,0.7,craneMat,cx-1.3,4.5,-2.6);box(port,0.7,9,0.7,craneMat,cx+1.3,4.5,-2.6);
+    box(port,0.7,9,0.7,craneMat,cx-1.3,4.5,0.6);box(port,0.7,9,0.7,craneMat,cx+1.3,4.5,0.6);
+    box(port,3.4,0.6,4,craneMat,cx,9.1,-1);
+    box(port,0.9,0.7,16,craneMat,cx,9.8,4.5);
+    box(port,1.8,1.4,1.8,M(0x2a2420),cx,9.1,6);
+  });
+  const ship=new THREE.Group();ship.position.set(0,0,8.8);port.add(ship);
+  const hull=M(0x2a3a48,{roughness:.55,metalness:.3});
+  box(ship,34,3.4,7.2,hull,0,0.2,0);
+  box(ship,34.2,0.7,7.4,M(0x8e2b21),0,-1.05,0);
+  box(ship,5,4.6,6.2,M(0xeeeae2,{roughness:.6}),-13.5,4.1,0);
+  box(ship,5.4,0.3,6.6,M(0xeeeae2),-13.5,6.5,0);
+  cyl(ship,0.5,0.6,2.2,10,M(0x2a2420),-14.5,7.6,0);
+  for(let i=0;i<4;i++){
+    box(ship,5.2,0.6,5.4,M(0x3b4a57),-5+i*6.5,2.2,0);
+    const h=new THREE.Mesh(new THREE.ConeGeometry(2.3,1.5,24),oreMat);h.position.set(-5+i*6.5,3.2,0);h.castShadow=true;ship.add(h);
+  }
+
+  // ---------- vegetation (instanced) ----------
+  function treeCrown(seed){
+    const parts=[];const k=3+Math.floor(hash(seed,1)*3);
+    for(let i=0;i<k;i++){
+      const b=blob(1,0.45,seed*10+i);
+      const s=1.1+hash(seed,i+2)*0.7;b.scale(1.6*s,0.55*s,1.6*s);
+      const a=i/k*6.283+hash(seed,i)*1.2,r=i===0?0:1.1+hash(i,seed)*0.8;
+      b.translate(Math.cos(a)*r,3.4+hash(seed,i+9)*0.7,Math.sin(a)*r);parts.push(b);
+    }
+    return merge(parts);
+  }
+  function treeTrunk(){
+    const t=new THREE.CylinderGeometry(0.11,0.22,3.4,6);t.translate(0,1.7,0);
+    const b1=new THREE.CylinderGeometry(0.06,0.1,1.8,5);b1.translate(0,0.9,0);b1.rotateZ(0.7);b1.translate(0,2.4,0);
+    const b2=new THREE.CylinderGeometry(0.06,0.1,1.6,5);b2.translate(0,0.8,0);b2.rotateZ(-0.6);b2.rotateY(1.8);b2.translate(0,2.6,0);
+    return merge([t,b1,b2]);
+  }
+  function scatter(count,test){
+    const out=[];let guard=0;
+    while(out.length<count&&guard++<count*40){
+      const x=(rnd()-.5)*240,z=(rnd()-.5)*240;
+      if(x+z>101)continue;
+      if(Math.hypot(x-PIT.x,z-PIT.z)<PIT.r+3)continue;
+      const d=roadDist(x,z);if(!test(x,z,d))continue;
+      out.push([x,z,d]);
+    }
+    return out;
+  }
+  const o3=new THREE.Object3D(),icol=new THREE.Color();
+  function instanced(geo,mat,list,scaleFn,colorFn,yOff){
+    const m=new THREE.InstancedMesh(geo,mat,list.length);
+    list.forEach((p,i)=>{
+      o3.position.set(p[0],terrain(p[0],p[1],p[2])+(yOff||0),p[1]);
+      const s=scaleFn();o3.scale.set(s[0],s[1],s[2]);o3.rotation.set(0,rnd()*6.283,0);o3.updateMatrix();
+      m.setMatrixAt(i,o3.matrix);
+      if(colorFn){colorFn(icol);m.setColorAt(i,icol);}
+    });
+    if(m.instanceColor)m.instanceColor.needsUpdate=true;
+    return m;
+  }
+  {
+    const trees=scatter(mobile?150:230,(x,z,d)=>d>15&&rnd()<0.35+grassiness(x,z)*0.65);
+    const trunkG=treeTrunk(),trunkM=M(0x4a3426,{roughness:1});
+    const leafM=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95});
+    const groups=[[],[],[]];trees.forEach((t,i)=>groups[i%3].push(t));
+    groups.forEach((list,gi)=>{
+      const scales=list.map(()=>{const s=0.75+rnd()*0.8;return [s,s*(0.85+rnd()*0.35),s];});
+      let si=0;const sf=()=>scales[si++];
+      const crown=instanced(treeCrown(gi+1),leafM,list,sf,c=>c.copy(C([0x4e5a2a,0x5d6630,0x45512a][(rnd()*3)|0])).multiplyScalar(0.85+rnd()*0.3));
+      si=0;
+      const trunk=instanced(trunkG,trunkM,list,sf);
+      crown.castShadow=trunk.castShadow=true;crown.receiveShadow=true;
+      scene.add(crown,trunk);
+    });
+    // bushes
+    const bushes=scatter(mobile?220:340,(x,z,d)=>d>9&&rnd()<grassiness(x,z)+0.15);
+    const bush=instanced(blob(1,0.5,77),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1}),bushes,
+      ()=>{const s=0.5+rnd()*0.9;return [s*1.3,s*0.7,s*1.3];},c=>c.copy(C([0x5f6432,0x6e6b3a,0x4f5a2c][(rnd()*3)|0])),0.15);
+    bush.castShadow=true;bush.receiveShadow=true;scene.add(bush);
+    // dry grass tufts
+    const parts=[];for(let i=0;i<8;i++){const h=0.45+rnd()*0.35;const c=new THREE.ConeGeometry(0.025,h,3,1,true);c.translate(0,h/2,0);c.rotateZ((rnd()-.5)*0.9);c.rotateY(i*0.8);c.translate((rnd()-.5)*0.35,0,(rnd()-.5)*0.35);parts.push(c);}
+    const tuftG=merge(parts);
+    const tufts=scatter(mobile?1800:3200,(x,z,d)=>d>5.8&&rnd()<grassiness(x,z)*0.9+0.08);
+    const tuft=instanced(tuftG,new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,side:THREE.DoubleSide}),tufts,
+      ()=>{const s=0.6+rnd()*0.7;return [s,s*(0.7+rnd()*0.6),s];},c=>c.copy(C([0xa89558,0x9a8a4c,0x8c8148,0xb5a066][(rnd()*4)|0])));
+    tuft.receiveShadow=true;scene.add(tuft);
+    // rocks
+    const rocks=scatter(mobile?120:200,(x,z,d)=>d>6.2&&d<28);
+    const rock=instanced(blob(0,0.6,5),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1,map:grainSmall,flatShading:true}),rocks,
+      ()=>{const s=0.15+rnd()*0.45;return [s*1.4,s*0.8,s];},c=>c.copy(C([0x6d3a26,0x8a5038,0x5e3022][(rnd()*3)|0])),0.05);
+    rock.castShadow=true;rock.receiveShadow=true;scene.add(rock);
+  }
+
+  // ---------- trucks ----------
+  const paint=M(0xd4a020,{roughness:.42,metalness:.15});
+  const dark=M(0x1f1b18,{roughness:.85}), steel=M(0x8e8a84,{roughness:.5,metalness:.55});
+  const bodyM=new THREE.MeshStandardMaterial({color:C(0xa9a194),roughness:.8,metalness:.25,map:grainSmall});
+  const glass=M(0x1b252d,{roughness:.08,metalness:.7}), mud=new THREE.MeshStandardMaterial({color:C(0x7d3d25),roughness:1,map:grainSmall});
+  const rimM=M(0xcfcac0,{roughness:.35,metalness:.6}), tireM=new THREE.MeshStandardMaterial({color:C(0x1c1917),roughness:1,map:grainSmall});
+  const lampM=new THREE.MeshStandardMaterial({color:0xfff4d6,emissive:C(0xffe6a8),emissiveIntensity:.6});
+  const tailM=new THREE.MeshStandardMaterial({color:C(0x8a1d14),emissive:C(0x5a0e08),emissiveIntensity:.5});
+
+  function makeTruck(){
+    const g=new THREE.Group();
+    // chassis
+    box(g,0.25,0.32,7.8,dark,0.55,0.95,-0.3);box(g,0.25,0.32,7.8,dark,-0.55,0.95,-0.3);
+    // cab-over cab
+    const cz=2.85;
+    box(g,2.4,1.9,1.8,paint,0,2.15,cz);
+    box(g,2.3,0.22,1.6,paint,0,3.21,cz-0.05);
+    box(g,2.15,0.85,0.05,glass,0,2.58,cz+0.91,false);
+    box(g,2.3,0.12,0.15,paint,0,3.07,cz+0.92);
+    [1,-1].forEach(s=>{
+      box(g,0.05,0.75,0.95,glass,s*1.21,2.58,cz+0.25,false);
+      box(g,0.04,0.9,0.04,dark,s*1.215,1.75,cz-0.45,false);          // door line
+      box(g,0.55,0.05,0.05,dark,s*1.45,2.62,cz+0.72);                // mirror arm
+      box(g,0.07,0.5,0.24,dark,s*1.72,2.5,cz+0.72);                  // mirror
+      box(g,0.35,0.07,0.45,dark,s*1.05,1.0,cz+0.25);                 // step
+      box(g,0.36,0.2,0.05,lampM,s*0.85,1.72,cz+0.92,false);          // headlight
+      box(g,0.62,0.08,1.5,dark,s*1.02,1.38,2.55);                    // front mudguard
+      box(g,0.55,0.65,0.04,dark,s*1.05,0.72,-3.75);                  // mudflap
+      box(g,0.18,0.12,0.04,tailM,s*0.95,1.05,-4.15,false);           // tail light
+    });
+    box(g,1.6,0.55,0.05,dark,0,1.72,cz+0.92,false);
+    for(let i=0;i<4;i++)box(g,1.5,0.045,0.08,steel,0,1.52+i*0.13,cz+0.94,false);
+    box(g,2.5,0.32,0.3,steel,0,1.12,cz+1.0);
+    box(g,2.43,0.35,1.83,mud,0,1.33,cz,false);                        // mud on lower cab
+    cyl(g,0.36,0.36,1.15,16,steel,0.98,1.12,1.25,'z');                 // fuel tank
+    cyl(g,0.08,0.08,1.9,8,dark,-1.0,2.7,1.85);                         // exhaust stack
+    box(g,2.4,0.08,0.08,dark,0,0.92,-4.15);                            // rear bar
+    // dump body
+    const bed=new THREE.Group();bed.position.set(0,1.28,-1.45);g.add(bed);
+    box(bed,2.45,0.16,5.1,bodyM,0,0,0);
+    [1,-1].forEach(s=>{
+      const side=box(bed,0.1,1.35,5.1,bodyM,s*1.21,0.72,0);side.rotation.z=s*0.05;
+      box(bed,0.15,0.13,5.15,steel,s*1.26,1.4,0);
+      for(let z=-2;z<=2;z++)box(bed,0.07,1.3,0.12,steel,s*1.28,0.68,z*1.1,false);
+      box(bed,0.13,0.45,5.12,mud,s*1.27,0.2,0,false);
+    });
+    box(bed,2.6,1.7,0.12,bodyM,0,0.9,2.55);
+    box(bed,2.6,0.1,0.95,bodyM,0,1.72,3.0);
+    box(bed,2.5,1.3,0.12,bodyM,0,0.7,-2.55);
+    box(bed,2.52,0.4,0.14,mud,0,0.2,-2.57,false);
+    const oreG=blob(2,0.35,3);oreG.scale(1.1,0.5,2.2);
+    const ore=new THREE.Mesh(oreG,oreMat);ore.position.set(0,1.05,0);ore.castShadow=true;bed.add(ore);
+    // wheels
+    const wheels=[];
+    function wheel(x,z,dual){
+      const w=new THREE.Group();w.position.set(x,0.62,z);g.add(w);
+      const width=dual?0.78:0.46;
+      cyl(w,0.62,0.62,width,24,tireM,0,0,0,'x');
+      cyl(w,0.34,0.34,width+0.03,14,rimM,0,0,0,'x');
+      cyl(w,0.12,0.12,width+0.07,8,dark,0,0,0,'x');
+      wheels.push(w);
+    }
+    wheel(1.0,2.55,false);wheel(-1.0,2.55,false);
+    [-1.45,-2.8].forEach(z=>{wheel(0.98,z,true);wheel(-0.98,z,true);});
+    scene.add(g);
+    return {g,wheels,ore};
+  }
+  const LANE=2.5;
+  const _p=new THREE.Vector3(),_t=new THREE.Vector3(),_r=new THREE.Vector3(),_look=new THREE.Vector3();
+  function placeTruck(tr,u,dir){
+    curve.getPointAt(u,_p);curve.getTangentAt(u,_t);_t.multiplyScalar(dir);_t.y=0;_t.normalize();
+    _r.set(-_t.z,0,_t.x);
+    tr.g.position.copy(_p).addScaledVector(_r,LANE);tr.g.position.y=0.05;
+    _look.copy(tr.g.position).add(_t);tr.g.lookAt(_look);
+    return {pos:tr.g.position,t:_t,r:_r};
+  }
+  const main=makeTruck();
+  const returning=[makeTruck(),makeTruck()];
+  returning.forEach(t=>t.ore.visible=false);
+
+  // ---------- dust ----------
+  function dustTex(){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(0.5,'rgba(255,255,255,.45)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);}
+  const DN=mobile?120:200;
+  const dPos=new Float32Array(DN*3),dVel=new Float32Array(DN*3),dLife=new Float32Array(DN);
+  for(let i=0;i<DN;i++)dPos[i*3+1]=-100;
+  const dGeo=new THREE.BufferGeometry();dGeo.setAttribute('position',new THREE.BufferAttribute(dPos,3));
+  const dust=new THREE.Points(dGeo,new THREE.PointsMaterial({color:C(0xc4906a),size:2.6,map:dustTex(),transparent:true,opacity:.28,depthWrite:false}));
+  dust.frustumCulled=false;scene.add(dust);
+  let dHead=0;
+  function spawnDust(pos,t){
+    const i=dHead;dHead=(dHead+1)%DN;
+    dPos[i*3]=pos.x-t.x*3.9+(rnd()-.5)*2;dPos[i*3+1]=0.4;dPos[i*3+2]=pos.z-t.z*3.9+(rnd()-.5)*2;
+    dVel[i*3]=(rnd()-.5)*1.2-t.x*0.8;dVel[i*3+1]=0.5+rnd()*0.9;dVel[i*3+2]=(rnd()-.5)*1.2-t.z*0.8;
+    dLife[i]=1.8+rnd()*0.8;
+  }
+
+
+
+  // ---------- camera follows the truck as you scroll ----------
+  let portrait=false;
+  function resize(){
+    const w=innerWidth,h=innerHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h;portrait=w/h<0.9;camera.fov=portrait?60:46;
+    if(portrait)camera.setViewOffset(w,h,0,h*0.22,w,h);
+    else if(w>=900)camera.setViewOffset(w,h,-w*0.2,0,w,h);
+    else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+  }
+  addEventListener('resize',resize);resize();
+
+  const U0=0.012,U1=0.975;
+  let cur=U0+progress()*(U1-U0),last=performance.now(),time=0,first=true;
+  const camPos=new THREE.Vector3(),camTgt=new THREE.Vector3(),dPosV=new THREE.Vector3(),dTgtV=new THREE.Vector3();
+  const heroTgt=new THREE.Vector3(-66,0,-42),heroPosBase=new THREE.Vector3(-40,15,-14);
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000);last=now;time+=dt;
+    const p=progress();
+    const target=U0+p*(U1-U0),prev=cur;
+    cur+=(target-cur)*(reduce?1:Math.min(1,dt*3));
+    const st=placeTruck(main,cur,1);
+    const pos=st.pos.clone(),t=st.t.clone(),r=st.r.clone();
+    const moved=(cur-prev)*LEN;
+    main.wheels.forEach(w=>w.rotation.x+=moved/0.62);
+    main.ore.visible=cur<0.955;
+
+    const speed=Math.abs(moved)/Math.max(dt,1e-4);
+    const spawn=Math.min(4,Math.floor(speed*0.22));
+    for(let k=0;k<spawn;k++)spawnDust(pos,t);
+    for(let i=0;i<DN;i++){
+      if(dLife[i]<=0)continue;
+      dLife[i]-=dt;
+      if(dLife[i]<=0){dPos[i*3+1]=-100;continue;}
+      dPos[i*3]+=dVel[i*3]*dt;dPos[i*3+1]+=dVel[i*3+1]*dt;dPos[i*3+2]+=dVel[i*3+2]*dt;
+      dVel[i*3]*=0.98;dVel[i*3+1]*=0.96;dVel[i*3+2]*=0.98;
+    }
+    dGeo.attributes.position.needsUpdate=true;
+
+    returning.forEach((tr,i)=>{
+      const s=1-((time*0.009+i/2)%1);
+      tr.g.visible=s>0.02&&s<0.98;
+      if(tr.g.visible){placeTruck(tr,s,-1);if(!reduce)tr.wheels.forEach(w=>w.rotation.x+=dt*LEN*0.009/0.62);}
+    });
+
+    sun.position.set(pos.x-34,52,pos.z+26);sun.target.position.copy(pos);
+
+    const wide=(1+0.5*smooth(0.8,1,p))*(portrait?1.6:1);
+    const chasePos=pos.clone().addScaledVector(t,-12*wide).addScaledVector(r,6.5*wide).addScaledVector(UP,6.2*wide);
+    const chaseTgt=pos.clone().addScaledVector(t,5).addScaledVector(UP,1.2);
+    const heroPos=heroTgt.clone().lerp(heroPosBase,portrait?1.3:1);
+    const k=smooth(0,0.15,p);
+    dPosV.copy(heroPos).lerp(chasePos,k);dTgtV.copy(heroTgt).lerp(chaseTgt,k);
+    if(first||reduce){camPos.copy(dPosV);camTgt.copy(dTgtV);first=false;}
+    else{const a=Math.min(1,dt*4);camPos.lerp(dPosV,a);camTgt.lerp(dTgtV,a);}
+    camera.position.copy(camPos);camera.lookAt(camTgt);
+    sky.position.copy(camPos);
+
+    renderer.render(scene,camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
